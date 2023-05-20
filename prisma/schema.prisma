@@ -59,7 +59,9 @@ model User {
 
   linearApiKey     String?
   slackAccessToken String?
-  message          String  @default("you had a great day today! {{numIssuesCompleted}} issues worth {{numPointsCompleted}} completed 👀")
+  message          String    @default("you had a great day today! {{numIssuesCompleted}} issues worth {{numPointsCompleted}} completed 👀")
+  slackChannelId   String?
+  sendAt           DateTime?
 
   accounts Account[]
   sessions Session[]

@@ -9,4 +9,29 @@ export const userRouter = createTRPCRouter({
       },
     })
   ),
+
+  updateUser: protectedProcedure
+    .input(
+      z.object({
+        data: z.object({
+          linearApiKey: z.string().optional(),
+          message: z.string().optional(),
+          slackChannel: z.string().optional(),
+          sendAt: z.date().optional(),
+        }),
+      })
+    )
+    .mutation(async ({ ctx: { session, prisma }, input }) =>
+      prisma.user.update({
+        where: {
+          id: session.user.id,
+        },
+        data: {
+          linearApiKey: input.data.linearApiKey,
+          message: input.data.message,
+          slackChannelId: input.data.slackChannel,
+          sendAt: input.data.sendAt,
+        },
+      })
+    ),
 });

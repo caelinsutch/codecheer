@@ -9,31 +9,66 @@ import { FormInput } from "~/components/FormInputs/FormInput";
 import { SlackChannelSelect } from "~/components/SlackChannelSelect";
 import { FormTextarea } from "~/components/FormInputs/FormTextarea";
 import { zodResolver } from "@hookform/resolvers/zod";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import { User } from "@prisma/client";
+import { useToast } from "~/hooks/useToast";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(customParseFormat);
 
 const formSchema = z.object({
   linearApiKey: z.string().length(48, {
     message: "Linear API Key is 48 characters long",
   }),
-  message: z.string(),
+  message: z.string().optional(),
   slackChannel: z.string().optional(),
-  sendAt: z.string(),
+  sendAt: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
+const userToData = (user: User): FormData => ({
+  sendAt: dayjs(user.sendAt).format("HH:mm"),
+  linearApiKey: user.linearApiKey ?? "",
+  message: user.message,
+  slackChannel: user.slackChannelId ?? "",
+});
+
 export const Dashboard = () => {
+  const { toast, toasts } = useToast();
   const { data: user } = api.user.getUser.useQuery();
 
-  if (!user) return null;
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
+    defaultValues: user ? userToData(user) : {},
+  });
+
+  const { mutate: updateUser } = api.user.updateUser.useMutation({
+    onSuccess: (user) => {
+      form.reset(userToData(user));
+      toast({
+        title: "Settings updated",
+        variant: "success",
+      });
+      console.log(toasts);
+    },
   });
 
   const onSubmit = (data: FormData) => {
-    console.log(data);
+    const parsedData = {
+      ...data,
+      sendAt: dayjs(data.sendAt, "HH:mm").tz(dayjs.tz.guess()).toDate(),
+    };
+    updateUser({
+      data: parsedData,
+    });
   };
 
-  console.log(form.formState.errors);
+  if (!user) return null;
 
   return (
     <div className="flex w-[24rem] w-full max-w-xl flex-col items-center py-4 ">
