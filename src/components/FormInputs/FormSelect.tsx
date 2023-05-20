@@ -58,7 +58,7 @@ export const FormSelect: FC<FormSelectProps> = ({
         >
           <FormControl>
             <SelectTrigger>
-              <SelectValue placeholder="Select a verified email to display" />
+              <SelectValue placeholder="Select a slack channel to send to" />
             </SelectTrigger>
           </FormControl>
           <SelectContent>
