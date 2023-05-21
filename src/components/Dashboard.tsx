@@ -15,6 +15,8 @@ import timezone from "dayjs/plugin/timezone";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { User } from "@prisma/client";
 import { useToast } from "~/hooks/useToast";
+import { FormSelect } from "~/components/FormInputs/FormSelect";
+import { timezones } from "~/constants/timezones";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -27,6 +29,7 @@ const formSchema = z.object({
   message: z.string().optional(),
   slackChannel: z.string().optional(),
   sendAt: z.string().optional(),
+  timezone: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -36,6 +39,7 @@ const userToData = (user: User): FormData => ({
   linearApiKey: user.linearApiKey ?? "",
   message: user.message,
   slackChannel: user.slackChannelId ?? "",
+  timezone: user.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
 });
 
 export const Dashboard = () => {
@@ -47,7 +51,7 @@ export const Dashboard = () => {
     defaultValues: user ? userToData(user) : {},
   });
 
-  const { mutate: updateUser } = api.user.updateUser.useMutation({
+  const { mutate: updateUser, isLoading } = api.user.updateUser.useMutation({
     onSuccess: (user) => {
       form.reset(userToData(user));
       toast({
@@ -112,8 +116,22 @@ export const Dashboard = () => {
             label="Time"
             inputProps={{ placeholder: "XXXX...", type: "time" }}
           />
-          <FormTextarea control={form.control} name="message" label="Message" />
-          <Button type="submit" disabled={!form.formState.isDirty}>
+          <FormSelect
+            control={form.control}
+            name="timezone"
+            label="Timezone"
+            options={timezones.map((timezone) => ({
+              label: timezone,
+              value: timezone,
+            }))}
+          />
+          <FormTextarea
+            control={form.control}
+            name="message"
+            label="Message"
+            description="You can use variables {{numIssuesCompleted}} and {{numPointsCompleted}}"
+          />
+          <Button type="submit" disabled={!form.formState.isDirty || isLoading}>
             Update
           </Button>
         </form>

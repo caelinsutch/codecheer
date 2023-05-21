@@ -62,6 +62,7 @@ model User {
   message          String    @default("you had a great day today! {{numIssuesCompleted}} issues worth {{numPointsCompleted}} completed 👀")
   slackChannelId   String?
   sendAt           DateTime?
+  timezone         String?
 
   accounts Account[]
   sessions Session[]

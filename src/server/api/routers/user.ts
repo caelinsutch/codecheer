@@ -18,6 +18,7 @@ export const userRouter = createTRPCRouter({
           message: z.string().optional(),
           slackChannel: z.string().optional(),
           sendAt: z.date().optional(),
+          timezone: z.string().optional(),
         }),
       })
     )
@@ -31,6 +32,7 @@ export const userRouter = createTRPCRouter({
           message: input.data.message,
           slackChannelId: input.data.slackChannel,
           sendAt: input.data.sendAt,
+          timezone: input.data.timezone,
         },
       })
     ),
